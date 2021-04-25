@@ -1,4 +1,7 @@
 const mongoose = require('mongoose')
+const moment = require('moment-timezone')
+
+const timeZone = moment.tz.guess()
 
 const attendanceLogSchema = new mongoose.Schema(
   {
@@ -13,6 +16,10 @@ const attendanceLogSchema = new mongoose.Schema(
     outTime: {
       type: Date,
       required: [true, 'Out time is required'],
+    },
+    timeZone: {
+      type: String,
+      default: timeZone,
     },
     regularizationType: {
       type: String,
@@ -37,8 +44,16 @@ const attendanceLogSchema = new mongoose.Schema(
   }
 )
 
+// attendanceLogSchema.virtual('IN').get(function () {
+//   return moment().tz(this.inTime, this.timeZone).format()
+// })
+
+// attendanceLogSchema.virtual('OUT').get(function () {
+//   return moment().tz(this.outTime, this.timeZone).format()
+// })
+
 attendanceLogSchema.virtual('workingHours').get(function () {
-  return this.inTime - this.outTime
+  return (this.outTime - this.inTime) / 3600000
 })
 
 const AttendanceLogs = mongoose.model('AttendanceLogs', attendanceLogSchema)

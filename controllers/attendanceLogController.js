@@ -1,27 +1,27 @@
+const moment = require('moment-timezone')
 const AttendanceLogs = require('./../models/attendanceLogModel')
 const Users = require('./../models/userModel')
 
 exports.createAttendance = async (req, res) => {
   try {
-    const user = await Users.findOne({ alias: req.body.alias }, '_id')
+    req.body.user = req.user._id
 
-    if (!user) throw '404'
-    req.body.user = user._id
+    req.body.inTime = `${req.body.date}T${req.body.inTime}`
+    req.body.outTime = `${req.body.date}T${req.body.outTime}`
 
     const attendance = await AttendanceLogs.create(req.body)
 
     res.status(201).json({
       status: 'success',
       data: {
-        attendance
-      }
+        attendance,
+      },
     })
-
-
   } catch (err) {
+    console.log(err)
     res.status(400).json({
       status: 'fail',
-      message: err
+      message: err,
     })
   }
 }

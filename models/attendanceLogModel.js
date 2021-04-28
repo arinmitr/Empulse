@@ -1,7 +1,4 @@
 const mongoose = require('mongoose')
-const moment = require('moment-timezone')
-
-const timeZone = moment.tz.guess()
 
 const attendanceLogSchema = new mongoose.Schema(
   {
@@ -11,25 +8,38 @@ const attendanceLogSchema = new mongoose.Schema(
     },
     inTime: {
       type: Date,
-      required: [true, 'In time is required'],
+      default: null,
     },
     outTime: {
       type: Date,
-      required: [true, 'Out time is required'],
-    },
-    timeZone: {
-      type: String,
-      default: timeZone,
+      default: null,
+      validate: {
+        validator: function (val) {
+          if (!val || !this.inTime) return true
+          else return val >= this.inTime
+        },
+        message: 'Out Time should be greater than In Time',
+      },
     },
     regularizationType: {
       type: String,
       required: [true, 'Type is required'],
-      enum: ['Working from home', 'Working from client location', 'Business travel'],
+      enum: ['Swipe', 'Working from home', 'Working from client location', 'Business travel'],
     },
     status: {
       type: String,
       enum: ['Pending', 'Approved', 'Rejected'],
       default: 'Pending',
+    },
+    code: {
+      type: String,
+      default: function () {
+        if (!this.inTime && !this.outTime) return 'AB'
+        else if (!this.inTime || !this.outTime) return 'M'
+        else if ((this.outTime - this.inTime) / 3600000 >= 9) return 'W+'
+        else if ((this.outTime - this.inTime) / 3600000 < 9) return 'W-'
+        else return 'M'
+      },
     },
     Note: String,
     user: {
@@ -53,7 +63,8 @@ const attendanceLogSchema = new mongoose.Schema(
 // })
 
 attendanceLogSchema.virtual('workingHours').get(function () {
-  return (this.outTime - this.inTime) / 3600000
+  if (!this.inTime || !this.outTime) return 0
+  else return (this.outTime - this.inTime) / 3600000
 })
 
 const AttendanceLogs = mongoose.model('AttendanceLogs', attendanceLogSchema)

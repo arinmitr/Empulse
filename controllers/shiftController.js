@@ -43,7 +43,7 @@ exports.viewShift = async (req, res) => {
       user: req.body.user,
       startDate: { $lte: req.body.date },
       endDate: { $gte: req.body.date },
-    }).select('shiftName shiftCode -_id')
+    }).select('shiftName shiftCode _id')
 
     if (shift.length <= 0) throw 'No shift defined on this date'
 

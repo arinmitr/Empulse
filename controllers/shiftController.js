@@ -33,14 +33,8 @@ exports.createShift = async (req, res) => {
 
 exports.viewShift = async (req, res) => {
   try {
-    const user = await Users.findOne({ alias: req.body.alias }, '_id')
-
-    if (!user) throw 'User not found'
-
-    req.body.user = user._id
-
     const shift = await Shifts.find({
-      user: req.body.user,
+      user: req.user.id,
       startDate: { $lte: req.body.date },
       endDate: { $gte: req.body.date },
     }).select('shiftName shiftCode _id')

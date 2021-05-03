@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-
+const validator = require('validator')
 const attendanceLogSchema = new mongoose.Schema(
   {
     date: {
@@ -41,6 +41,9 @@ const attendanceLogSchema = new mongoose.Schema(
         else return 'M'
       },
     },
+    shiftStatus: {
+      type: String,
+    },
     Note: String,
     user: {
       type: mongoose.Schema.ObjectId,
@@ -53,14 +56,6 @@ const attendanceLogSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 )
-
-// attendanceLogSchema.virtual('IN').get(function () {
-//   return moment().tz(this.inTime, this.timeZone).format()
-// })
-
-// attendanceLogSchema.virtual('OUT').get(function () {
-//   return moment().tz(this.outTime, this.timeZone).format()
-// })
 
 attendanceLogSchema.virtual('workingHours').get(function () {
   if (!this.inTime || !this.outTime) return 0
